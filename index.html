@@ -3,11 +3,342 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BOLF</title>
+<title>BOLF Wholesale Catalog — Trial</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body style="font-family: Arial, sans-serif; text-align: center; padding: 80px 20px; background: #EEF1F4;">
-  <h1 style="color: #161A23; font-size: 48px;">BOLF</h1>
-  <p style="color: #5B6472; font-size: 18px;">Wholesale Catalog — Dubai</p>
-  <p style="color: #2F7A5E; font-size: 16px; margin-top: 40px;">✅ If you can see this live on a real URL, the pipeline works!</p>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useRef } = React;
+
+function Search({ size = 16, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+function X({ size = 16, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+    </svg>
+  );
+}
+function Package({ size = 16, color = "currentColor", className = "" }) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m7.5 4.27 9 5.15" /><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" />
+    </svg>
+  );
+}
+function RotateCcw({ size = 16, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
+    </svg>
+  );
+}
+function ChevronLeft({ size = 16, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+function ChevronRight({ size = 16, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+const PACKING_LABELS = ["1 Dozen (1 colour)", "2 Dozen (mix)", "20 Pairs (mix)"];
+const CARTON_DISCOUNT_BUFFER = 20;
+
+const BADGE_CONFIG = {
+  newArrival: { label: "New", icon: "★", bg: "#E2A93A", fg: "#161A23" },
+  onOffer: { label: "Offer", icon: "🔥", bg: "#D9483A", fg: "#fff" },
+  fastSelling: { label: "Bestseller", icon: "🏆", bg: "#2F7A5E", fg: "#fff" },
+  limitedStock: { label: "Limited Stock", icon: "⚡", bg: "#C97A1E", fg: "#fff" },
+  backInStock: { label: "Back in Stock", icon: "🔄", bg: "#2B5AA3", fg: "#fff" },
+  readyToShip: { label: "Ready to Ship", icon: "🚚", bg: "#5B6472", fg: "#fff" },
+};
+const BADGE_KEYS = Object.keys(BADGE_CONFIG);
+
+const DEMO_ADMINS = [
+  { name: "Ubaid", code: "BOSS2026", active: true },
+  { name: "Sales1", code: "SALES01", active: true },
+  { name: "Sales2", code: "SALES02", active: true },
+  { name: "Manager", code: "MGR2026", active: true },
+  { name: "Kamaal", code: "FAM2026", active: true },
+];
+
+const PRODUCTS = [
+  { id: "BLF001", name: "Best-25", gender: "Men", category: "Fashion Shoes",
+    colors: ["Black", "Black Multi", "Black White", "Dark Green", "Matt Grey", "Navy Blue", "Sky Blue", "White"],
+    sizeRange: "40-44", newArrival: false, onOffer: false, fastSelling: false, limitedStock: false, backInStock: false, readyToShip: false, outOfStock: false,
+    photoByColor: { "Black": "BLF001-BEST25-BLACK", "Black Multi": "BLF001-BEST25-BLACKMULTI", "Black White": "BLF001-BEST25-BLACKWHITE", "Dark Green": "BLF001-BEST25-DARKGREEN", "Matt Grey": "BLF001-BEST25-MATTGREY", "Navy Blue": "BLF001-BEST25-NAVYBLUE", "Sky Blue": "BLF001-BEST25-SKYBLUE", "White": "BLF001-BEST25-WHITE" },
+    packing: [{ label: "1 Dozen (1 colour)", pairs: 12, price: 440 }] },
+  { id: "BLF002", name: "Boom-83 Big", gender: "Men", category: "Sports Shoes",
+    colors: ["Full Black"], sizeRange: "45-47", newArrival: false, onOffer: false, fastSelling: false, limitedStock: false, backInStock: false, readyToShip: false, outOfStock: false,
+    photoByColor: { "Full Black": "BLF002-BOOM83BIG-FULLBLACK" },
+    packing: [{ label: "1 Dozen (1 colour)", pairs: 12, price: 500 }] },
+  { id: "BLF003", name: "Boom-93 Big", gender: "Men", category: "Sports Shoes",
+    colors: ["Black White", "Dark Grey", "Grey Multi", "Navy", "White Black"], sizeRange: "45-47", newArrival: false, onOffer: false, fastSelling: false, limitedStock: false, backInStock: false, readyToShip: false, outOfStock: false,
+    photoByColor: { "Black White": "BLF003-BOOM93BIG-BLACKWHITE", "Dark Grey": "BLF003-BOOM93BIG-DARKGREY", "Grey Multi": "BLF003-BOOM93BIG-GREYMULTI", "Navy": "BLF003-BOOM93BIG-NAVY", "White Black": "BLF003-BOOM93BIG-WHITEBLACK" },
+    packing: [{ label: "1 Dozen (1 colour)", pairs: 12, price: 500 }] },
+  { id: "BLF004", name: "Boom-80", gender: "Men", category: "Sports Shoes",
+    colors: ["Dark Grey"], sizeRange: "40-45", newArrival: false, onOffer: false, fastSelling: false, limitedStock: false, backInStock: false, readyToShip: false, outOfStock: false,
+    photoByColor: { "Dark Grey": "BLF004-BOOM80-DARKGREY" },
+    packing: [{ label: "1 Dozen (1 colour)", pairs: 12, price: 470 }] },
+  { id: "BLF005", name: "Boom-830", gender: "Men", category: "Sports Shoes",
+    colors: ["Light Grey"], sizeRange: "40-45", newArrival: false, onOffer: false, fastSelling: false, limitedStock: false, backInStock: false, readyToShip: false, outOfStock: false,
+    photoByColor: { "Light Grey": "BLF005-BOOM830-LIGHTGREY" },
+    packing: [{ label: "1 Dozen (1 colour)", pairs: 12, price: 475 }] },
+  { id: "BLF006", name: "Born-2675", gender: "Men", category: "Casual",
+    colors: ["Black", "Grey", "Brown"], sizeRange: "40-44", newArrival: false, onOffer: false, fastSelling: false, limitedStock: false, backInStock: false, readyToShip: false, outOfStock: false,
+    mixPhoto: "BLF006-BORN2675",
+    packing: [{ label: "2 Dozen (mix)", pairs: 24, price: 420 }] },
+  { id: "BLF007", name: "Born-2676", gender: "Men", category: "Casual",
+    colors: ["Black", "Grey", "Brown"], sizeRange: "40-44", newArrival: false, onOffer: false, fastSelling: false, limitedStock: false, backInStock: false, readyToShip: false, outOfStock: false,
+    mixPhoto: "BLF007-BORN2676",
+    packing: [{ label: "2 Dozen (mix)", pairs: 24, price: 420 }] },
+];
+
+const ACTIVE_PRODUCTS = PRODUCTS.filter((p) => !p.outOfStock);
+const GENDERS = [...new Set(ACTIVE_PRODUCTS.map((p) => p.gender))];
+const CATEGORIES = [...new Set(ACTIVE_PRODUCTS.map((p) => p.category))];
+const COLORS = [...new Set(ACTIVE_PRODUCTS.flatMap((p) => p.colors))];
+const SIZES = [...new Set(ACTIVE_PRODUCTS.map((p) => p.sizeRange))];
+
+function lowestPairPrice(p) { return Math.min(...p.packing.map((k) => k.price / k.pairs)); }
+function pairPriceForPacking(p, packingLabel) {
+  const match = p.packing.find((k) => k.label === packingLabel);
+  if (match) return match.price / match.pairs;
+  return lowestPairPrice(p);
+}
+function lowestFloorPairPrice(p) { return Math.min(...p.packing.map((k) => (k.price - CARTON_DISCOUNT_BUFFER) / k.pairs)); }
+function floorPairPriceForPacking(p, packingLabel) {
+  const match = p.packing.find((k) => k.label === packingLabel);
+  if (match) return (match.price - CARTON_DISCOUNT_BUFFER) / match.pairs;
+  return lowestFloorPairPrice(p);
+}
+
+function Chip({ active, onClick, children }) {
+  return (
+    <button onClick={onClick} className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors whitespace-nowrap ${active ? "bg-[#161A23] text-[#EEF1F4] border-[#161A23]" : "bg-transparent text-[#161A23] border-[#D7DBE0] hover:border-[#161A23]"}`} style={{ fontFamily: "Inter, sans-serif" }}>
+      {children}
+    </button>
+  );
+}
+
+function BolfTrialSite() {
+  const [gender, setGender] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [color, setColor] = useState(null);
+  const [size, setSize] = useState(null);
+  const [packing, setPacking] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(50);
+  const [priceFilterMode, setPriceFilterMode] = useState("floor");
+  const [activeBadges, setActiveBadges] = useState({});
+  const [query, setQuery] = useState("");
+  const [adminMode, setAdminMode] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginName, setLoginName] = useState("");
+  const [loginCode, setLoginCode] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [photoIndex, setPhotoIndex] = useState({});
+  const touchStartX = useRef({});
+
+  const goToIndex = (productId, colors, newIndex) => {
+    const wrapped = ((newIndex % colors.length) + colors.length) % colors.length;
+    setPhotoIndex((prev) => ({ ...prev, [productId]: wrapped }));
+  };
+
+  const filtered = useMemo(() => {
+    const activeKeys = Object.keys(activeBadges).filter((k) => activeBadges[k]);
+    return ACTIVE_PRODUCTS.filter((p) => {
+      if (gender && p.gender !== gender) return false;
+      if (category && p.category !== category) return false;
+      if (color && !p.colors.includes(color)) return false;
+      if (size && p.sizeRange !== size) return false;
+      if (packing && !p.packing.some((k) => k.label === packing)) return false;
+      if (activeKeys.some((k) => !p[k])) return false;
+      if (adminMode) {
+        const relevantPrice = priceFilterMode === "listed" ? (packing ? pairPriceForPacking(p, packing) : lowestPairPrice(p)) : (packing ? floorPairPriceForPacking(p, packing) : lowestFloorPairPrice(p));
+        if (relevantPrice > maxPrice) return false;
+      }
+      if (query && !p.name.toLowerCase().includes(query.toLowerCase())) return false;
+      return true;
+    });
+  }, [gender, category, color, size, packing, maxPrice, priceFilterMode, activeBadges, query, adminMode]);
+
+  const resetAll = () => {
+    setGender(null); setCategory(null); setColor(null); setSize(null); setPacking(null); setMaxPrice(50); setActiveBadges({}); setQuery("");
+  };
+
+  const hasFilters = gender || category || color || size || packing || (adminMode && maxPrice < 50) || Object.values(activeBadges).some(Boolean) || query;
+
+  return (
+    <div className="min-h-screen w-full" style={{ background: "#EEF1F4", fontFamily: "Inter, sans-serif" }}>
+      <header className="px-5 py-5 sm:px-8 sm:py-6" style={{ background: "#161A23" }}>
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl sm:text-4xl tracking-tight leading-none" style={{ fontFamily: "'Archivo Black', sans-serif", color: "#EEF1F4" }}>BOLF</h1>
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] mt-1" style={{ fontFamily: "'Space Mono', monospace", color: "#E2A93A" }}>Wholesale Catalog · Dubai</p>
+          </div>
+          <div className="text-[10px] uppercase tracking-wider px-2.5 py-1 rounded border cursor-pointer"
+            onClick={() => { if (adminMode) { setAdminMode(false); setAdminUser(null); } else { setShowLogin(true); } }}
+            style={{ fontFamily: "'Space Mono', monospace", color: adminMode ? "#161A23" : "#E2A93A", borderColor: "#E2A93A", background: adminMode ? "#E2A93A" : "transparent" }}>
+            {adminMode ? `Admin: ${adminUser} (tap to exit)` : "TRIAL · 7 real articles"}
+          </div>
+        </div>
+        {!adminMode && (<p className="max-w-5xl mx-auto text-[10px] mt-2" style={{ fontFamily: "'Space Mono', monospace", color: "#5B6472" }}>tap badge → admin login</p>)}
+      </header>
+
+      {showLogin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" style={{ background: "rgba(22,26,35,0.6)" }}>
+          <div className="bg-white rounded-sm w-full max-w-xs p-5" style={{ border: "2px solid #161A23" }}>
+            <h3 className="text-lg mb-1" style={{ fontFamily: "'Archivo Black', sans-serif", color: "#161A23" }}>Admin Login</h3>
+            <p className="text-[10px] mb-4" style={{ color: "#5B6472", fontFamily: "'Space Mono', monospace" }}>Authorized team members only</p>
+            <input value={loginName} onChange={(e) => setLoginName(e.target.value)} placeholder="Your name" className="w-full text-sm px-3 py-2 mb-2 border rounded-sm outline-none" style={{ borderColor: "#D7DBE0" }} />
+            <input value={loginCode} onChange={(e) => setLoginCode(e.target.value)} placeholder="Access code" type="password" className="w-full text-sm px-3 py-2 mb-2 border rounded-sm outline-none" style={{ borderColor: "#D7DBE0" }} />
+            {loginError && <p className="text-[10px] mb-2" style={{ color: "#D9483A", fontFamily: "'Space Mono', monospace" }}>{loginError}</p>}
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => { setShowLogin(false); setLoginError(""); setLoginName(""); setLoginCode(""); }} className="flex-1 text-xs px-3 py-2 rounded-sm border" style={{ borderColor: "#D7DBE0", color: "#5B6472", fontFamily: "Inter, sans-serif" }}>Cancel</button>
+              <button onClick={() => {
+                  const match = DEMO_ADMINS.find((a) => a.name.toLowerCase() === loginName.trim().toLowerCase() && a.code === loginCode.trim());
+                  if (match && match.active) { setAdminMode(true); setAdminUser(match.name); setShowLogin(false); setLoginError(""); setLoginName(""); setLoginCode(""); }
+                  else { setLoginError("Name/code not recognized or inactive."); }
+                }} className="flex-1 text-xs px-3 py-2 rounded-sm text-white" style={{ background: "#161A23", fontFamily: "Inter, sans-serif" }}>Unlock</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="sticky top-0 z-10 border-b" style={{ background: "#EEF1F4", borderColor: "#D7DBE0" }}>
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Search size={16} color="#5B6472" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search style name..." className="w-full bg-transparent outline-none text-sm py-1" style={{ color: "#161A23" }} />
+            {hasFilters && (<button onClick={resetAll} className="flex items-center gap-1 text-xs shrink-0" style={{ color: "#5B6472", fontFamily: "'Space Mono', monospace" }}><RotateCcw size={12} /> reset</button>)}
+          </div>
+          <div className="flex gap-1.5">{GENDERS.map((g) => (<Chip key={g} active={gender === g} onClick={() => setGender(gender === g ? null : g)}>{g}</Chip>))}</div>
+          <div className="flex gap-1.5 flex-wrap">{BADGE_KEYS.map((k) => (<Chip key={k} active={!!activeBadges[k]} onClick={() => setActiveBadges((prev) => ({ ...prev, [k]: !prev[k] }))}>{BADGE_CONFIG[k].icon} {BADGE_CONFIG[k].label}</Chip>))}</div>
+          <div className="flex gap-2 overflow-x-auto pb-1">{CATEGORIES.map((c) => (<Chip key={c} active={category === c} onClick={() => setCategory(category === c ? null : c)}>{c}</Chip>))}</div>
+          <div className="flex items-center gap-1.5 flex-wrap">{COLORS.map((c) => (<Chip key={c} active={color === c} onClick={() => setColor(color === c ? null : c)}>{c}</Chip>))}</div>
+          <div className="flex items-center gap-1.5 flex-wrap">{SIZES.map((s) => (<Chip key={s} active={size === s} onClick={() => setSize(size === s ? null : s)}>{s}</Chip>))}</div>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex gap-1.5 flex-wrap">{PACKING_LABELS.map((s) => (<Chip key={s} active={packing === s} onClick={() => setPacking(packing === s ? null : s)}>{s}</Chip>))}</div>
+            {adminMode && (
+              <div className="w-full flex flex-col gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] uppercase tracking-wide mr-1" style={{ fontFamily: "'Space Mono', monospace", color: "#5B6472" }}>Filter by:</span>
+                  <button onClick={() => setPriceFilterMode("listed")} className="px-2.5 py-1 text-[10px] rounded-full border" style={{ fontFamily: "'Space Mono', monospace", background: priceFilterMode === "listed" ? "#161A23" : "transparent", color: priceFilterMode === "listed" ? "#EEF1F4" : "#161A23", borderColor: "#161A23" }}>Listed price</button>
+                  <button onClick={() => setPriceFilterMode("floor")} className="px-2.5 py-1 text-[10px] rounded-full border" style={{ fontFamily: "'Space Mono', monospace", background: priceFilterMode === "floor" ? "#2F7A5E" : "transparent", color: priceFilterMode === "floor" ? "#fff" : "#2F7A5E", borderColor: "#2F7A5E" }}>Floor price</button>
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <span className="text-xs whitespace-nowrap" style={{ fontFamily: "'Space Mono', monospace", color: "#5B6472" }}>≤ AED {maxPrice}/pr ({priceFilterMode})</span>
+                  <input type="range" min="10" max="50" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-24 accent-[#161A23]" />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-5 sm:px-8 py-6">
+        <p className="text-xs mb-4 uppercase tracking-wider" style={{ fontFamily: "'Space Mono', monospace", color: "#5B6472" }}>{filtered.length} of {PRODUCTS.length} styles</p>
+        {filtered.length === 0 ? (
+          <div className="py-16 text-center">
+            <Package size={28} color="#5B6472" className="mx-auto mb-3" />
+            <p style={{ color: "#5B6472" }} className="text-sm">No styles match those filters yet.</p>
+            <button onClick={resetAll} className="mt-3 text-xs underline" style={{ color: "#161A23", fontFamily: "'Space Mono', monospace" }}>clear filters</button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map((p) => {
+              const shownPacking = packing && p.packing.some((k) => k.label === packing) ? packing : null;
+              const displayPrice = shownPacking ? pairPriceForPacking(p, shownPacking) : lowestPairPrice(p);
+              const activeIndex = photoIndex[p.id] || 0;
+              const activeColor = p.colors[activeIndex] || p.colors[0];
+              const photoKey = p.mixPhoto || p.photoByColor[activeColor];
+              const multiPhoto = !p.mixPhoto && p.colors.length > 1;
+              return (
+                <div key={p.id} className="relative bg-white rounded-sm overflow-hidden border" style={{ borderColor: "#D7DBE0" }}>
+                  {BADGE_KEYS.some((k) => p[k]) && (
+                    <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 items-end">
+                      {BADGE_KEYS.filter((k) => p[k]).map((k) => (<div key={k} className="px-2 py-1 rounded-full border-2 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap" style={{ background: BADGE_CONFIG[k].bg, borderColor: "#161A23", color: BADGE_CONFIG[k].fg, fontFamily: "'Space Mono', monospace" }}>{BADGE_CONFIG[k].icon} {BADGE_CONFIG[k].label}</div>))}
+                    </div>
+                  )}
+                  <div className="relative aspect-square flex items-center justify-center overflow-hidden select-none" style={{ background: "#F4F5F6" }}
+                    onTouchStart={(e) => { touchStartX.current[p.id] = e.touches[0].clientX; }}
+                    onTouchEnd={(e) => {
+                      if (!multiPhoto) return;
+                      const startX = touchStartX.current[p.id];
+                      if (startX == null) return;
+                      const diff = e.changedTouches[0].clientX - startX;
+                      if (Math.abs(diff) > 40) { goToIndex(p.id, p.colors, activeIndex + (diff < 0 ? 1 : -1)); }
+                      touchStartX.current[p.id] = null;
+                    }}>
+                    <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
+                      <Package size={30} color="#B7BEC7" />
+                      <span className="text-[9px] uppercase tracking-wider" style={{ fontFamily: "'Space Mono', monospace", color: "#B7BEC7" }}>photo: {photoKey}</span>
+                    </div>
+                    {multiPhoto && (
+                      <>
+                        <button onClick={() => goToIndex(p.id, p.colors, activeIndex - 1)} className="absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(22,26,35,0.55)" }}><ChevronLeft size={14} color="#fff" /></button>
+                        <button onClick={() => goToIndex(p.id, p.colors, activeIndex + 1)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(22,26,35,0.55)" }}><ChevronRight size={14} color="#fff" /></button>
+                        <div className="absolute bottom-1.5 left-0 right-0 flex items-center justify-center gap-1">{p.colors.map((c, i) => (<span key={c} className="rounded-full" style={{ width: i === activeIndex ? 6 : 4, height: i === activeIndex ? 6 : 4, background: i === activeIndex ? "#E2A93A" : "rgba(255,255,255,0.7)" }} />))}</div>
+                        <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full text-[9px]" style={{ background: "rgba(22,26,35,0.6)", color: "#fff", fontFamily: "'Space Mono', monospace" }}>{activeColor}</div>
+                      </>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <p className="text-[10px] uppercase tracking-widest mb-1" style={{ fontFamily: "'Space Mono', monospace", color: "#E2A93A" }}>{p.gender} · {p.category}</p>
+                    <h3 className="text-xl mb-1" style={{ fontFamily: "'Archivo Black', sans-serif", color: "#161A23" }}>{p.name}</h3>
+                    <p className="text-[10px] mb-2" style={{ fontFamily: "'Space Mono', monospace", color: "#5B6472" }}>Sizes {p.sizeRange}</p>
+                    {!multiPhoto && (<p className="text-[10px] mb-3" style={{ fontFamily: "'Space Mono', monospace", color: "#5B6472" }}>Colour{p.colors.length > 1 ? "s" : ""}: {p.colors.join(", ")}</p>)}
+                    {multiPhoto && (<p className="text-[9px] mb-3" style={{ fontFamily: "'Space Mono', monospace", color: "#B7BEC7" }}>swipe photo for {p.colors.length} colours</p>)}
+                    <div className="mb-3 space-y-1">
+                      {p.packing.map((k) => {
+                        const perPair = k.price / k.pairs;
+                        const floorPerPair = (k.price - CARTON_DISCOUNT_BUFFER) / k.pairs;
+                        return (
+                          <div key={k.label} className="text-[10px] px-2 py-1 rounded" style={{ fontFamily: "'Space Mono', monospace", background: shownPacking === k.label ? "#FCEFD4" : "#F4F5F6", color: "#5B6472" }}>
+                            <div className="flex items-center justify-between"><span>{k.label} · {k.pairs} pr</span>{adminMode && <span style={{ color: "#161A23" }}>AED {k.price}</span>}</div>
+                            {adminMode && (<div className="flex items-center justify-between mt-0.5"><span style={{ color: "#8A9099" }}>AED {perPair.toFixed(2)}/pr listed</span><span style={{ color: "#2F7A5E", fontWeight: 700 }}>floor AED {floorPerPair.toFixed(2)}/pr</span></div>)}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-dashed" style={{ borderColor: "#D7DBE0" }}>
+                      {adminMode ? (<span className="text-lg font-bold" style={{ fontFamily: "'Space Mono', monospace", color: "#161A23" }}>{!shownPacking && "from "}AED {displayPrice.toFixed(2)}<span className="text-[10px] font-normal" style={{ color: "#5B6472" }}> /pair listed</span></span>) : (<span className="text-xs" style={{ color: "#5B6472" }}>Ask for pricing</span>)}
+                      <button className="text-xs px-3 py-1.5 rounded-sm text-white" style={{ background: "#161A23", fontFamily: "Inter, sans-serif" }}>Request quote</button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </main>
+      <footer className="max-w-5xl mx-auto px-5 sm:px-8 py-6 text-center">
+        <p className="text-xs" style={{ color: "#5B6472" }}>Trial with your real 7 articles (BLF001–BLF007). Photos to be added next.</p>
+      </footer>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<BolfTrialSite />);
+</script>
 </body>
 </html>
